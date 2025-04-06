@@ -1,0 +1,560 @@
+إليك البرنامج ك
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إدارة بطاقات البيع</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .header {
+            background-color: #007BFF;
+            color: white;
+            padding: 10px;
+            text-align: center;
+            position: relative;
+        }
+        .header .total-sales {
+            font-size: 24px;
+            margin: 0;
+        }
+        .header .sales-icon {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 30px;
+            cursor: pointer;
+        }
+        .cash-display {
+            position: absolute;
+            left: 65px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 20px;
+            color: white;
+            font-weight: bold;
+            background-color: rgba(0, 123, 255, 0.8);
+            padding: 5px;
+            border-radius: 5px;
+        }
+        .customization-tool {
+            margin: 10px 0;
+            text-align: center;
+        }
+        .customization-tool select {
+            padding: 5px;
+            margin: 0 5px;
+        }
+        .login-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f4f4f4;
+            position: absolute;
+            width: 100%;
+        }
+        .login-box {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 300px;
+        }
+        .login-box h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        input[type="text"], input[type="password"], input[type="search"], input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            padding: 10px 15px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        .main-content {
+            display: none;
+        }
+        h2, h3 {
+            color: #333;
+        }
+        .counter {
+            font-weight: bold;
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .counter100 {
+            background-color: #007BFF;
+            color: white;
+        }
+        .counter200 {
+            background-color: #28A745;
+            color: white;
+        }
+        .counter250 {
+            background-color: #FFC107;
+            color: white;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: center;
+        }
+        th {
+            background-color: #007BFF;
+            color: white;
+        }
+        .operations-table {
+            margin-top: 20px;
+        }
+        .action-button {
+            padding: 5px 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 5px;
+        }
+        .action-button.share-button {
+            background-color: #007BFF;
+            color: white;
+        }
+        .action-button.copy-button {
+            background-color: #28A745;
+            color: white;
+        }
+        .action-button.sell-button {
+            background-color: #DC3545;
+            color: white;
+        }
+        .transfer-container {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .transfer-container input {
+            width: 80%;
+        }
+        .transfer-container button {
+            width: 20%;
+            margin-left: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container" id="loginContainer">
+        <div class="login-box">
+            <h2>تسجيل الدخول</h2>
+            <input type="text" id="username" placeholder="اسم المستخدم" required>
+            <input type="password" id="password" placeholder="كلمة المرور" required>
+            <button onclick="login()">تسجيل الدخول</button>
+        </div>
+    </div>
+
+    <div class="header" id="appHeader" style="display: none;">
+        <span class="sales-icon" onclick="showCashAmount()">💰</span>
+        <span class="cash-display" id="cashDisplay">0 ريالا</span>
+        <h2 class="total-sales" id="totalSalesCount">إجمالي المبيعات: 0 ريالا</h2>
+        <div class="transfer-container">
+            <input type="number" id="transferAmount" placeholder="المبلغ المراد نقله" min="1">
+            <button onclick="transferToCash()">نقل</button>
+        </div>
+    </div>
+    
+    <div class="customization-tool">
+        <h3>تخصيص العرض</h3>
+        <label for="themeSelect">اختر الثيم:</label>
+        <select id="themeSelect" onchange="changeTheme()">
+            <option value="default">افتراضي</option>
+            <option value="dark">داكن</option>
+        </select>
+    </div>
+
+    <div class="main-content" id="mainContent" style="display: none;">
+        <h3>إدارة بطاقات البيع</h3>
+        <div class="counter counter100">
+            <span id="count100">عدد بطاقات 100: 0</span>
+        </div>
+        <div class="counter counter200">
+            <span id="count200">عدد بطاقات 200: 0</span>
+        </div>
+        <div class="counter counter250">
+            <span id="count250">عدد بطاقات 250: 0</span>
+        </div>
+        <h3>إضافة بطاقة</h3>
+        <select id="cardCategory">
+            <option value="100">بطاقة 100</option>
+            <option value="200">بطاقة 200</option>
+            <option value="250">بطاقة 250</option>
+        </select>
+        <textarea id="inputNumbers" rows="10" placeholder="أدخل الأرقام هنا (كل رقم في سطر منفصل)"></textarea>
+        <button onclick="addCards()">إضافة بطاقة</button>
+
+        <h3>سجلات البطاقات</h3>
+        <div id="cardsContainers">
+            <h4>بطاقات 100</h4>
+            <table id="cardsTable100">
+                <thead>
+                    <tr>
+                        <th>البطاقة</th>
+                        <th>الإجراءات</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+            <h4>بطاقات 200</h4>
+            <table id="cardsTable200">
+                <thead>
+                    <tr>
+                        <th>البطاقة</th>
+                        <th>الإجراءات</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+            <h4>بطاقات 250</h4>
+            <table id="cardsTable250">
+                <thead>
+                    <tr>
+                        <th>البطاقة</th>
+                        <th>الإجراءات</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+        
+        <h3>سجل العمليات</h3>
+        <input type="search" id="searchInput" placeholder="البحث عن رقم الكرت" oninput="searchOperations()">
+        <table id="operationsTable" class="operations-table">
+            <thead>
+                <tr>
+                    <th>البطاقة</th>
+                    <th>الفئة</th>
+                    <th>التاريخ</th>
+                    <th>الوقت</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.js"></script>
+    <script>
+        const cards = { '100': [], '200': [], '250': [] };
+        const operations = [];
+        let totalSales = 0;
+        let cash = 0; // الخزنة
+        let db;
+
+        // Initialize IndexedDB
+        function initDB() {
+            const request = indexedDB.open("SalesDB", 1);
+            request.onupgradeneeded = function(event) {
+                db = event.target.result;
+                db.createObjectStore("cards", { keyPath: "id" });
+                db.createObjectStore("operations", { keyPath: "id" });
+            };
+
+            request.onsuccess = function(event) {
+                db = event.target.result;
+                loadData();
+            };
+
+            request.onerror = function(event) {
+                console.error("Database error: " + event.target.errorCode);
+            };
+        }
+
+        function loadData() {
+            const transaction = db.transaction(["cards", "operations"], "readonly");
+            const cardsStore = transaction.objectStore("cards");
+            const operationsStore = transaction.objectStore("operations");
+
+            const cardsRequest = cardsStore.getAll();
+            const operationsRequest = operationsStore.getAll();
+
+            cardsRequest.onsuccess = function(event) {
+                const storedCards = event.target.result;
+                storedCards.forEach(card => {
+                    cards[card.category].push(card.number);
+                    addCardToTable(card.category, card.number);
+                });
+                updateCounters();
+            };
+
+            operationsRequest.onsuccess = function(event) {
+                const storedOperations = event.target.result;
+                operations.push(...storedOperations);
+                operations.forEach(op => addToOperationsTable(op.card, op.category, op.date, op.time));
+                updateTotalSales();
+            };
+        }
+
+        function saveData() {
+            const transaction = db.transaction(["cards", "operations"], "readwrite");
+            const cardsStore = transaction.objectStore("cards");
+            const operationsStore = transaction.objectStore("operations");
+
+            // Clear existing data
+            cardsStore.clear();
+            operationsStore.clear();
+
+            // Save cards
+            Object.keys(cards).forEach(category => {
+                cards[category].forEach(card => {
+                    cardsStore.add({ id: card, category, number: card });
+                });
+            });
+
+            // Save operations
+            operations.forEach(op => {
+                operationsStore.add({ id: op.card + op.date + op.time, ...op });
+            });
+        }
+
+        function speakText(text) {
+            const utterance = new SpeechSynthesisUtterance(text);
+            speechSynthesis.speak(utterance);
+        }
+
+        function showSuccessMessage(message) {
+            swal({
+                title: "نجاح!",
+                text: message,
+                icon: "success",
+                button: "موافق",
+            });
+            speakText(message);
+        }
+
+        function showErrorMessage(message) {
+            swal({
+                title: "خطأ!",
+                text: message,
+                icon: "error",
+                button: "حسناً",
+            });
+            speakText(message);
+        }
+
+        function login() {
+            const username = document.getElementById("username").value;
+            const password = document.getElementById("password").value;
+
+            if (username === "admin" && password === "mohammed11") {
+                document.getElementById("loginContainer").style.display = "none";
+                document.getElementById("mainContent").style.display = "block";
+                document.getElementById("appHeader").style.display = "block";
+                initDB(); // Initialize database
+                const successMessage = "🎉 تم تسجيل الدخول بنجاح! استمتع بإدارة بطاقاتك.";
+                showSuccessMessage(successMessage);
+            } else {
+                const errorMessage = "🚫 اسم المستخدم أو كلمة المرور غير صحيحة. حاول مرة أخرى.";
+                showErrorMessage(errorMessage);
+            }
+        }
+
+        function updateCounters() {
+            document.getElementById("count100").textContent = `عدد بطاقات 100: ${cards['100'].length}`;
+            document.getElementById("count200").textContent = `عدد بطاقات 200: ${cards['200'].length}`;
+            document.getElementById("count250").textContent = `عدد بطاقات 250: ${cards['250'].length}`;
+            saveData(); // حفظ البيانات بعد تحديث العدادات
+        }
+
+        function addCards() {
+            const category = document.getElementById("cardCategory").value;
+            const input = document.getElementById("inputNumbers").value;
+            const lines = input.split('\n').map(line => line.trim()).filter(line => line !== '');
+            let addedCount = 0;
+
+            lines.forEach(line => {
+                if (!cards[category].includes(line)) {
+                    cards[category].push(line);
+                    addCardToTable(category, line);
+                    addedCount++;
+                }
+            });
+
+            if (addedCount > 0) {
+                const successMessage = `✅ لقد تم إضافة ${addedCount} كرت من فئة ${category} بنجاح.`;
+                showSuccessMessage(successMessage);
+                updateCounters(); // تحديث العدادات بعد إضافة البطاقة
+            } else {
+                const errorMessage = "⚠️ لا توجد بطاقات جديدة لإضافتها.";
+                showErrorMessage(errorMessage);
+            }
+            document.getElementById("inputNumbers").value = '';
+        }
+
+        function addCardToTable(category, card) {
+            const tableBody = document.getElementById(`cardsTable${category}`).getElementsByTagName('tbody')[0];
+            const newRow = tableBody.insertRow();
+            const cardCell = newRow.insertCell(0);
+            const actionCell = newRow.insertCell(1);
+            cardCell.textContent = card;
+            actionCell.innerHTML = `
+                <button class="action-button share-button" onclick="shareCard('${card}')">مشاركة</button>
+                <button class="action-button copy-button" onclick="copyCard('${card}')">نسخ</button>
+                <button class="action-button sell-button" onclick="sellCard('${card}', '${category}', this)">بيع</button>`;
+        }
+
+        function updateTotalSales() {
+            totalSales = calculateTotalSales();
+            document.getElementById("totalSalesCount").textContent = `إجمالي المبيعات: ${totalSales} ريالا`;
+        }
+
+        function calculateTotalSales() {
+            let total = 0;
+            operations.forEach(op => {
+                switch (op.category) {
+                    case '100': total += 100; break;
+                    case '200': total += 200; break;
+                    case '250': total += 250; break;
+                }
+            });
+            return total;
+        }
+
+        function sellCard(card, category, button) {
+            const date = new Date();
+            const dateString = date.toLocaleDateString();
+            const timeString = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            
+            // إضافة العملية
+            const operation = { card, category, date: dateString, time: timeString };
+            operations.push(operation);
+            
+            // حفظ العملية في IndexedDB
+            saveOperationToDB(operation);
+            
+            addToOperationsTable(card, category, dateString, timeString);
+            removeCardFromTable(card, category, button);
+            
+            // تحديث العدادات و إجمالي المبيعات
+            updateTotalSales();
+            updateCounters(); // تحديث العدادات بعد البيع
+
+            const successMessage = `💸 لقد تم بيع كرت فئة ${category} بنجاح.`;
+            showSuccessMessage(successMessage);
+        }
+
+        function saveOperationToDB(operation) {
+            const transaction = db.transaction(["operations"], "readwrite");
+            const operationsStore = transaction.objectStore("operations");
+            operationsStore.add({ id: operation.card + operation.date + operation.time, ...operation });
+        }
+
+        function removeCardFromTable(card, category, button) {
+            const row = button.parentElement.parentElement;
+            row.parentElement.removeChild(row);
+            cards[category] = cards[category].filter(c => c !== card);
+            saveData();
+            updateTotalSales();
+        }
+
+        function addToOperationsTable(card, category, date, time) {
+            const tableBody = document.getElementById("operationsTable").getElementsByTagName('tbody')[0];
+            const newRow = tableBody.insertRow();
+            const cardCell = newRow.insertCell(0);
+            const categoryCell = newRow.insertCell(1);
+            const dateCell = newRow.insertCell(2);
+            const timeCell = newRow.insertCell(3);
+            cardCell.textContent = card;
+            categoryCell.textContent = category;
+            dateCell.textContent = date;
+            timeCell.textContent = time;
+            // إضافة صف جديد في الأعلى
+            tableBody.insertBefore(newRow, tableBody.firstChild);
+        }
+
+        function searchOperations() {
+            const query = document.getElementById("searchInput").value.toLowerCase();
+            const rows = document.querySelectorAll("#operationsTable tbody tr");
+            rows.forEach(row => {
+                const cardCell = row.cells[0].textContent.toLowerCase();
+                row.style.display = cardCell.includes(query) ? "" : "none";
+            });
+        }
+
+        function transferToCash() {
+            const transferAmount = parseFloat(document.getElementById("transferAmount").value);
+            if (isNaN(transferAmount) || transferAmount <= 0 || transferAmount > totalSales) {
+                const errorMessage = "⚠️ يرجى إدخال مبلغ صحيح للنقل.";
+                showErrorMessage(errorMessage);
+                return;
+            }
+            cash += transferAmount;
+            totalSales -= transferAmount;
+            document.getElementById("totalSalesCount").textContent = `إجمالي المبيعات: ${totalSales} ريالا`;
+            document.getElementById("cashDisplay").textContent = `${cash} ريالا`;
+            const successMessage = `💵 تم نقل مبلغ ${transferAmount} ريالا إلى الخزنة بنجاح.`;
+            showSuccessMessage(successMessage);
+            checkCashAlerts(); // تحقق من التحذيرات
+            document.getElementById("transferAmount").value = '';
+        }
+
+        function checkCashAlerts() {
+            if (cash % 10000 === 0) {
+                const successMessage = `🎉 الخزنة وصلت إلى ${cash} ريالا!`;
+                showSuccessMessage(successMessage);
+            }
+        }
+
+        function shareCard(card) {
+            const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(card)}`;
+            window.open(whatsappUrl, '_blank');
+            const successMessage = `📲 تم مشاركة البطاقة ${card} عبر WhatsApp.`;
+            showSuccessMessage(successMessage);
+        }
+
+        function copyCard(card) {
+            navigator.clipboard.writeText(card).then(() => {
+                const successMessage = `📋 تم نسخ البطاقة: ${card}`;
+                showSuccessMessage(successMessage);
+            });
+        }
+
+        function changeTheme() {
+            const theme = document.getElementById("themeSelect").value;
+            if (theme === "dark") {
+                document.body.style.backgroundColor = "#333";
+                document.body.style.color = "white";
+            } else {
+                document.body.style.backgroundColor = "#f4f4f4";
+                document.body.style.color = "black";
+            }
+        }
+
+        // Initialize the database on page load
+        window.onload = function() {
+            initDB();
+        };
+    </script>
+</body>
+</html>
